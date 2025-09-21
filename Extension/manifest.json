@@ -7,7 +7,7 @@
         "default_popup": "Scripts/main.html",
         "default_icon": "Images/Logo1.png"
     },
-    "content_scripts": [
+        "content_scripts": [
         {
             "js": ["Scripts/content.js"],
             "matches": ["<all_urls>"]
