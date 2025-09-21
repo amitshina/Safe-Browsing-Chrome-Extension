@@ -1,0 +1,10 @@
+{
+    "name": "Safe Browsing",
+    "description": "Keeps you safe from phishing and ",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+        "default_popup": "Scripts/main.html",
+        "default_icon": "Images/Logo1.png"
+    }
+}
