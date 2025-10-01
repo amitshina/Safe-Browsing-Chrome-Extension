@@ -7,11 +7,15 @@
         "default_popup": "Scripts/main.html",
         "default_icon": "Images/Logo1.png"
     },
-        "content_scripts": [
-        {
-            "js": ["Scripts/content.js"],
-            "matches": ["<all_urls>"]
-        }
+    "content_scripts": [
+    {
+        "matches": ["<all_urls>"],
+        "js": ["Scripts/content.js"]
+    }
     ],
-    "permissions": ["tabs"]
+    "background": {
+        "service_worker": "Scripts/background.js"
+    },
+    "permissions": ["tabs"],
+    "host_permissions": ["https://checkurl.phishtank.com/*"]
 }

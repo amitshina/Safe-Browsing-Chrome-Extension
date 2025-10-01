@@ -1,10 +1,11 @@
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-    const currentUrl = tabs[0].url;
-    console.log(tabs[1])
-    const mainText = document.getElementById("main_text_extension");
-    if (mainText) {
-        mainText.textContent = currentUrl;
+// from a content script or popup:
+chrome.runtime.sendMessage(
+    { action: "checkPhish", url: "https://app.clientepessoafisica.click"},
+    response => {
+        if (!response) {
+        console.error("No response - maybe the service worker is inactive or crashed.");
+        return;
+        }
+        console.log("Phish result:", response);
     }
-});
-
-console.log(currentUrl)
+);
