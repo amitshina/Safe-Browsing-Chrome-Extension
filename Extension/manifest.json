@@ -16,6 +16,9 @@
     "background": {
         "service_worker": "Scripts/background.js"
     },
-    "permissions": ["tabs"],
-    "host_permissions": ["https://checkurl.phishtank.com/*"]
+    "host_permissions": ["https://safebrowsing.googleapis.com/*"],
+    "permissions": ["notifications"],
+    "icons":{
+        "48": "Images/Logo1.png"
+    }
 }
