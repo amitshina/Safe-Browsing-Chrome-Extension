@@ -1,5 +1,5 @@
-#  2. ~~[**PhishTank**](https://phishtank.org/) (Open community feed + API) - API Problems~~<br>
-#4. ~~[**urlscan.io**](https://urlscan.io/docs/api/) - submit URLs and get a DOM snapshot, resource list, screenshots and (paid) phishing/brand-detection feeds — very useful to analyze page contents safely off-client. - Not Effective, Is'nt Implemented~~<br>
+# 2. [**PhishTank**](https://phishtank.org/) (Open community feed + API) - API Problems.
+# 4. [**urlscan.io**](https://urlscan.io/docs/api/) - submit URLs and get a DOM snapshot, resource list, screenshots and (paid) phishing/brand-detection feeds — very useful to analyze page contents safely off-client. - Not Effective
 
 secret.json
 .env
