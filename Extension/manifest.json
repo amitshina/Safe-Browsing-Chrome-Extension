@@ -17,7 +17,7 @@
         "service_worker": "Scripts/background.js"
     },
     "host_permissions": ["https://safebrowsing.googleapis.com/*"],
-    "permissions": ["notifications"],
+    "permissions": ["notifications", "tabs"],
     "icons":{
         "48": "Images/Logo1.png"
     }

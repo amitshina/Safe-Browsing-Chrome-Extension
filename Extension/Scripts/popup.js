@@ -1,25 +1,37 @@
 // Gets the open tab url:
-
-// Recives the result and updates the extension
 document.addEventListener("DOMContentLoaded", () => {
-    chrome.runtime.sendMessage({ action: "getResult" }, response => {
-        if (!response) {
-            document.getElementById("main_text_extension").innerText = "404";
-            //chrome.runtime.sendMessage({action: "checkPhish", url: window.location.href});
-            return;
+    chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+        const url = tabs[0].url;
+        console.log(url);
+
+        if(url.startsWith("http")){
+            // Recives the result
+            chrome.runtime.sendMessage({ action: "getResult", url:url}, response => {
+                if(response!=undefined){
+                    console.log("defined");
+                    displayResult(response);
+                } else {
+                    // If the result is from a previus url
+                    chrome.runtime.sendMessage({ action: "checkPhish", url: url}, result => {
+                        displayResult(result);
+                    });
+                }
+            });
         }
-
-        let google_safety = response.google === true ? "Safe" : "Not Safe";
-
-        let result = `
-        <strong>URL:</strong><br>
-        ${response.url}<br>
-        <strong>Phish result:</strong><br>
-        Google: ${google_safety}<br>
-        VirusTotal score: ${response.virustotal}<br>
-        Error: ${response.error}
-        `;
-
-        document.getElementById("main_text_extension").innerHTML = result;
     });
-});
+})
+
+// Displays the result in the extension text:
+function displayResult(result) {
+    let google_safe = result.google === true ? "Safe" : "Not Safe";
+
+    let text = `
+        <strong>URL:</strong><br>${result.url}<br>
+        <strong>Phish result:</strong><br>
+        Google: ${google_safe}<br>
+        VirusTotal score: ${result.virustotal}<br>
+        Error: ${result.error}
+    `;
+
+    document.getElementById("main_text_extension").innerHTML = text;
+}

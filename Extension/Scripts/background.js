@@ -5,10 +5,13 @@
 let checked_urls = [];
 const checked_urls_max_length = 30;
 
-// List of the last websites, so it would'nt send the notification twice:
-let known_urls = []; 
+// List of the last unsafe websites, so it would'nt send the notification twice:
+let known_unsafe_urls = []; 
+const known_unsafe_urls_max_length = 5;
 
-// Google Safe Browsing Lookup API
+//----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Google Safe Browsing Lookup API:
 const google_api_key = "AIzaSyBgC0tLgH-C1xewijMspmtsaHWpQzDTSng";
 const google_api_url = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${google_api_key}`;
 
@@ -225,8 +228,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse(is_checked(msg.url))
     }
 
-    if (msg.action === "getResult") {
-        sendResponse(result);
+    if (msg.action === "getResult" && msg.url) {
+        if(msg.url===result.url){
+            sendResponse(result);
+        } else {
+            sendResponse(undefined);
+        }
     }
 
     if (msg.action === "checkPhish" && msg.url) {
@@ -239,13 +246,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             const virustotal_res = await checkUrl_virustotal(msg.url || "");
 
         if(virustotal_res.malicious+virustotal_res.suspicious>=1 || !google_res.safe){
-            console.log(known_urls);
             // Sends a notification if the url is unsafe and it is not in the last 10 urls
-            if (!known_urls.includes(msg.url)){
+            if (!known_unsafe_urls.includes(msg.url)){
                 createAlertNotification(msg.url, virustotal_res.score, google_res.safe);
-                known_urls.push(msg.url);
-                while(known_urls.length>10){
-                    known_urls.shift();
+                known_unsafe_urls.push(msg.url);
+                while(known_unsafe_urls.length>known_unsafe_urls_max_length){
+                    known_unsafe_urls.shift();
                 }
             }
             // Optional: set a badge on the extension icon
@@ -284,7 +290,7 @@ function createAlertNotification(url, score, googleStatus) {
     const message = `URL: ${url}\nVirusTotal score: ${score}\nGoogle: ${googleStatus}`;
 
     chrome.notifications.create(
-        /*notificationId=*/ undefined,
+        undefined,
         {
         type: "basic",
         iconUrl: "/Images/Logo1.png",
