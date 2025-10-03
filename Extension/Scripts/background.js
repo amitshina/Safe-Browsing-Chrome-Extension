@@ -1,6 +1,10 @@
 // Define the Sleep Function:
 // const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// API keys stored in a secret file:
+const secret = await fetch("secret.json");
+const api_keys = JSON.parse(secret);
+
 // List of the last checked urls, so the api rate would'nt exceed:
 let checked_urls = [];
 const checked_urls_max_length = 30;
@@ -12,7 +16,7 @@ const known_unsafe_urls_max_length = 5;
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // Google Safe Browsing Lookup API:
-const google_api_key = "AIzaSyBgC0tLgH-C1xewijMspmtsaHWpQzDTSng";
+const google_api_key = api_keys.GOOGLE_APIKEY;
 const google_api_url = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${google_api_key}`;
 
 async function checkUrl_google(url) {
@@ -94,7 +98,7 @@ async function checkUrl_google(url) {
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Virus Total:
-const virustotal_api_key = "9eb385aba130cf0802efa162736d749df942121ed75d6584b6738fb8c995efd9";
+const virustotal_api_key = api_keys.VIRUSTOTAL_APIKEY;
 const virustotal_api_url = "https://www.virustotal.com/api/v3/urls/"
 
 async function checkUrl_virustotal(url) {
