@@ -10,3 +10,13 @@ A chrome etxtension that protects you from phishing and social engeneering attac
   2. Displayes the result in the extension.<br>
   3. If a site is found unsafe, a messege is sent to the user.<br>
   4. API flooding control - doesn't automaticly checks the site if it has been checked recently.<br>
+
+## Set Up API Keys:
+  Create a folder inside script called secret.json:.<br>
+  ```json
+  {
+    "VIRUSTOTAL_APIKEY" : "****",
+    "GOOGLE_APIKEY" : "****"
+  }
+  ```
+  Fill out your Google Safe Browsing and VIrustotal API keys.
