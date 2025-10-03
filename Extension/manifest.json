@@ -20,5 +20,10 @@
     "permissions": ["notifications", "tabs"],
     "icons":{
         "48": "Images/Logo1.png"
-    }
+    },
+    "web_accessible_resources": [
+    {
+        "resources": ["Scripts/secret.json"],
+        "matches": ["<all_urls>"]
+    }]
 }

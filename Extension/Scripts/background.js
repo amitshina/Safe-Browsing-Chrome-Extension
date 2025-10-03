@@ -1,10 +1,6 @@
 // Define the Sleep Function:
 // const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
-// API keys stored in a secret file:
-const secret = await fetch("secret.json");
-const api_keys = JSON.parse(secret);
-
 // List of the last checked urls, so the api rate would'nt exceed:
 let checked_urls = [];
 const checked_urls_max_length = 30;
@@ -16,7 +12,7 @@ const known_unsafe_urls_max_length = 5;
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // Google Safe Browsing Lookup API:
-const google_api_key = api_keys.GOOGLE_APIKEY;
+let google_api_key = "";
 const google_api_url = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${google_api_key}`;
 
 async function checkUrl_google(url) {
@@ -42,8 +38,10 @@ async function checkUrl_google(url) {
         const data = await res.json();
         if (data && data.matches) {
         return { safe: false, matches: data.matches };
-        } else {
-        return { safe: true };
+        } else if (data){
+        return { safe: true};
+        }else{
+            return{safe: null};
         }
     } catch (err) {
         console.error(err);
@@ -98,7 +96,7 @@ async function checkUrl_google(url) {
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 //Virus Total:
-const virustotal_api_key = api_keys.VIRUSTOTAL_APIKEY;
+let virustotal_api_key = "";
 const virustotal_api_url = "https://www.virustotal.com/api/v3/urls/"
 
 async function checkUrl_virustotal(url) {
@@ -228,6 +226,19 @@ let result = "";
 
 // Calling the Functions:
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if(msg.action==="updateApiKeys"){
+        // Load secrets in background script
+        fetch(chrome.runtime.getURL('Scripts/secret.json'))
+        .then((response) => response.json())
+        .then((secrets) => {
+            virustotal_api_key = secrets.VIRUSTOTAL_APIKEY;
+            google_api_key = secrets.GOOGLE_APIKEY;
+        })
+        .catch((err) => {
+            console.error('Failed to load secret.json:', err);
+        });
+
+    }
     if (msg.action === "isCheckedUrl" && msg.url){
         sendResponse(is_checked(msg.url))
     }
