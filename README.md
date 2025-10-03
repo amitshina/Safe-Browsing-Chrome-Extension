@@ -2,7 +2,7 @@
 A chrome etxtension that protects you from phishing and social engeneering attacks.
 
 ## Databases & API's:
-  1. [**Google Lookup API** v4/v5](https://developers.google.com/safe-browsing/v4) - industry-grade blacklist for phishing/malware, can be used as a real-time lookup.<br>
+  1. [**Google Lookup API** v4](https://developers.google.com/safe-browsing/v4) - industry-grade blacklist for phishing/malware, can be used as a real-time lookup.<br>
   2. [**VirusTotal**](https://docs.virustotal.com/) (URL / domain reports & scans) — aggregates many AV/URL scanners and reputation sources; great as a second-opinion API.<br>
 
 ## Features:
