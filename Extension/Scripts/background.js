@@ -1,6 +1,13 @@
 // Define the Sleep Function:
 // const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+// List of the last checked urls, so the api rate would'nt exceed:
+let checked_urls = [];
+const checked_urls_max_length = 30;
+
+// List of the last websites, so it would'nt send the notification twice:
+let known_urls = []; 
+
 // Google Safe Browsing Lookup API
 const google_api_key = "AIzaSyBgC0tLgH-C1xewijMspmtsaHWpQzDTSng";
 const google_api_url = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${google_api_key}`;
@@ -214,17 +221,33 @@ let result = "";
 
 // Calling the Functions:
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+    if (msg.action === "isCheckedUrl" && msg.url){
+        sendResponse(is_checked(msg.url))
+    }
+
     if (msg.action === "getResult") {
         sendResponse(result);
     }
 
     if (msg.action === "checkPhish" && msg.url) {
         (async () => {
-        const google_res = await checkUrl_google(msg.url || "");
-        const virustotal_res = await checkUrl_virustotal(msg.url || "");
+            checked_urls.push(msg.url);
+            while (checked_urls.length>checked_urls_max_length){
+                checked_urls.shift();
+            }
+            const google_res = await checkUrl_google(msg.url || "");
+            const virustotal_res = await checkUrl_virustotal(msg.url || "");
 
-        if(virustotal_res.malicious+virustotal_res.suspicious>=1){
-            createAlertNotification(msg.url, virustotal_res.score, google_res.safe);
+        if(virustotal_res.malicious+virustotal_res.suspicious>=1 || !google_res.safe){
+            console.log(known_urls);
+            // Sends a notification if the url is unsafe and it is not in the last 10 urls
+            if (!known_urls.includes(msg.url)){
+                createAlertNotification(msg.url, virustotal_res.score, google_res.safe);
+                known_urls.push(msg.url);
+                while(known_urls.length>10){
+                    known_urls.shift();
+                }
+            }
             // Optional: set a badge on the extension icon
             try {
                 chrome.action.setBadgeText({ text: "!" });
@@ -250,11 +273,16 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
 });
 
+// Checks if a url has been checked recently:
+function is_checked(url){
+    return checked_urls.includes(url);
+}
+
+// Sends a notification that the site is unsafe
 function createAlertNotification(url, score, googleStatus) {
     const title = "The Website You Just Entered is Potentially Unsafe";
     const message = `URL: ${url}\nVirusTotal score: ${score}\nGoogle: ${googleStatus}`;
 
-    // iconUrl should be a path to an icon inside your extension (48px recommended)
     chrome.notifications.create(
         /*notificationId=*/ undefined,
         {
@@ -262,7 +290,7 @@ function createAlertNotification(url, score, googleStatus) {
         iconUrl: "/Images/Logo1.png",
         title,
         message,
-        priority: 2 // high priority
+        priority: 2 
         },
         notificationId => {
         if (chrome.runtime.lastError) {

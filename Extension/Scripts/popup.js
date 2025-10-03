@@ -1,18 +1,15 @@
+// Gets the open tab url:
+
 // Recives the result and updates the extension
 document.addEventListener("DOMContentLoaded", () => {
     chrome.runtime.sendMessage({ action: "getResult" }, response => {
         if (!response) {
             document.getElementById("main_text_extension").innerText = "404";
+            //chrome.runtime.sendMessage({action: "checkPhish", url: window.location.href});
             return;
         }
 
-        let google_safety = "";
-        if (response.google) {
-            google_safety = "Safe";
-        }
-        else{
-            google_safety = "Not Safe";
-        }
+        let google_safety = response.google === true ? "Safe" : "Not Safe";
 
         let result = `
         <strong>URL:</strong><br>
