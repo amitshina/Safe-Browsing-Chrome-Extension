@@ -1,5 +1,5 @@
 // Define the Sleep Function:
-// const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // List of the last checked urls, so the api rate would'nt exceed:
 let checked_urls = [];
@@ -16,12 +16,13 @@ const unsafe_site_score = 2;
 
 // Google Safe Browsing Lookup API:
 let google_api_key = "";
-const google_api_url = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${google_api_key}`;
+const google_api_url = "https://safebrowsing.googleapis.com/v4/threatMatches:find?key=";
 
 async function checkUrl_google(url) {
+    const google_full_url = google_api_url+google_api_key;
     const body = {
         client: {
-        clientId: "safe-browsing-extension",
+        clientId: "safebrowsingextensionnala",
         clientVersion: "1.0"
         },
         threatInfo: {
@@ -33,7 +34,7 @@ async function checkUrl_google(url) {
     };
 
     try {
-        const res = await fetch(google_api_url, {
+        const res = await fetch(google_full_url, {
         method: "POST",
         body: JSON.stringify(body),
         headers: { "Content-Type": "application/json" }
@@ -41,13 +42,11 @@ async function checkUrl_google(url) {
         const data = await res.json();
         if (data && data.matches) {
         return { safe: false, matches: data.matches };
-        } else if (data){
-        return { safe: true};
-        }else{
-            return{safe: null};
+        } else {
+            return {safe : true};
         }
     } catch (err) {
-        console.error(err);
+        console.error("Google API ErrorL " + err);
         return { safe: null, error: "API request failed" +err};
     }
 }
@@ -117,7 +116,7 @@ async function checkUrl_virustotal(url) {
 
         if (res.status === 404) {
             // URL not found in database
-            return { safe: null, info: "Not in database" };
+            return { safe: null, error: "Not in database" };
         }
 
         if (res.status === 429) {
@@ -146,80 +145,79 @@ async function checkUrl_virustotal(url) {
 
     } catch (err) {
         console.error("VirusTotal API Error:", err);
-        return { safe: null, error: "API request failed"+err };
+        return { safe: null, error: "API request failed"+ err };
     }
 }
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // urlscan.io:
 
-// urlscan.io API
 // TODO: Replace with your actual API key
-// const urlscan_api_key = " 0199a5fc-7fa5-772e-8473-7ffb6aed9ef8"; 
-// const urlscan_submit_url = "https://urlscan.io/api/v1/scan/"; 
-// const urlscan_result_base_url = "https://urlscan.io/api/v1/result/";
+let urlscan_api_key = ""; 
+const urlscan_submit_url = "https://urlscan.io/api/v1/scan/"; 
+const urlscan_result_base_url = "https://urlscan.io/api/v1/result/";
 
-// async function checkUrl_urlscan(url) {
-//     const submitBody = {
-//         url: url,
-//         visibility: "unlisted" 
-//     };
+async function checkUrl_urlscan(url) {
+    const submitBody = {
+        url: url,
+        public: "off" 
+    };
 
-//     try {
-//         // Submit the URL for a new scan:
-//         let res = await fetch(urlscan_submit_url, {
-//             method: "POST",
-//             body: JSON.stringify(submitBody),
-//             headers: { 
-//                 "Content-Type": "application/json",
-//                 "API-Key": urlscan_api_key 
-//             }
-//         });
+    try {
+        // Submit the URL for a new scan:
+        let res = await fetch(urlscan_submit_url, {
+            method: "POST",
+            headers: { 
+                "Content-Type": "application/json",
+                "API-Key": urlscan_api_key 
+            },
+            body: JSON.stringify(submitBody)
+        });
 
-//         if (res.status === 429) {
-//             console.error("urlscan.io Rate Limit Hit (429)");
-//             return { score: null, error: "Rate Limit" }; 
-//         }
+        if (res.status === 429) {
+            console.error("urlscan.io Rate Limit Hit (429)");
+            return { score: null, error: "Rate Limit" }; 
+        }
         
-//         if (!res.ok) {
-//             throw new Error(`Submission failed with status: ${res.status}`);
-//         }
+        if (!res.ok) {
+            throw new Error(`Submission failed with status: ${res.status}`);
+        }
 
-//         const data = await res.json();
-//         const uuid = data.uuid;
+        const data = await res.json();
+        const uuid = data.uuid;
 
-//         // Poll for the scan results:
-//         let resultData = null;
-//         await sleep(10000); // Wait 5 seconds
-            
-//         res = await fetch(`${urlscan_result_base_url}${uuid}/`, {
-//             headers: { "API-Key": urlscan_api_key }
-//         });
+        // Poll for the scan results:
+        let resultData = null;
+        for (let index = 0; index < 6 || res.status === 200; index++) {
+            res = await fetch(`${urlscan_result_base_url}${uuid}/`, {
+                headers: { "API-Key": urlscan_api_key }
+            });
+            await sleep(3000); // Wait 3 seconds 
+        }
 
-//         if (res.status === 200) {
-//             resultData = await res.json();
-//         }
-//         else {
-//             throw new Error(`Result retrieval failed with status: ${res.status}`);
-//         }
+        if (res.status === 200) {
+            resultData = await res.json();
+        }
+        else {
+            throw new Error(`Result retrieval failed with status: ${res.status}`);
+        }
 
-//         if (!resultData) {
-//             // Timeout after polling
-//             return { score: null, error: "Timeout" }; 
-//         }
+        if (!resultData) {
+            // Timeout after polling
+            return { score: null, error: "Timeout" }; 
+        }
 
-//         // Extract the score
-//         // Score is an integer from -100 (safe) to 100 (malicious)
-//         const urlscan_score = resultData.verdicts.urlscan.score;
+        // Score is an integer from -100 (safe) to 100 (malicious)
+        const urlscan_score = resultData.verdicts.urlscan.score;
         
-//         return { 
-//             score: urlscan_score 
-//         };
+        return { 
+            score: urlscan_score 
+        };
 
-//     } catch (err) {
-//         console.error("urlscan.io API Error:", err);
-//         return { score: null, error: "API request failed" }; 
-//     }
-// }
+    } catch (err) {
+        console.error("urlscan.io API Error:", err);
+        return { score: null, error: "API request failed" }; 
+    }
+}
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 let result = "";
@@ -233,6 +231,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         .then((secrets) => {
             virustotal_api_key = secrets.VIRUSTOTAL_APIKEY;
             google_api_key = secrets.GOOGLE_APIKEY;
+            urlscan_api_key = secrets.URLSCAN_APIKEY;
         })
         .catch((err) => {
             console.error('Failed to load secret.json:', err);
@@ -244,7 +243,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     }
 
     if (msg.action === "getResult" && msg.url) {
-        if(msg.url===result.url){
+        if(msg.url===result.url && result.virustotal!=null){
             sendResponse(result);
         } else {
             sendResponse(undefined);
@@ -257,8 +256,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             while (checked_urls.length>checked_urls_max_length){
                 checked_urls.shift();
             }
-            const google_res = await checkUrl_google(msg.url || "");
-            const virustotal_res = await checkUrl_virustotal(msg.url || "");
+            const google_res = await checkUrl_google(msg.url);
+            const virustotal_res = await checkUrl_virustotal(msg.url);
+            // const urlscan_res = await checkUrl_urlscan(msg.url);
 
         // Sends a notifiaction to an unsafe site (unsafe_site_score - virustotal), or google flags it as unsafe 
         if(virustotal_res.malicious+virustotal_res.suspicious>=unsafe_site_score || !google_res.safe){

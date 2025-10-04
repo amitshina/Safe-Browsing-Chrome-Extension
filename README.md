@@ -2,8 +2,10 @@
 A chrome etxtension that protects you from phishing and social engeneering attacks.
 
 ## Databases & API's:
-  1. [**Google Lookup API** v4](https://developers.google.com/safe-browsing/v4) - industry-grade blacklist for phishing/malware, can be used as a real-time lookup.<br>
-  2. [**VirusTotal**](https://docs.virustotal.com/) (URL / domain reports & scans) — aggregates many AV/URL scanners and reputation sources; great as a second-opinion API.<br>
+  1. [**VirusTotal**](https://docs.virustotal.com/) (URL / domain reports & scans)<br>
+  2. [**Google Lookup API** v4](https://developers.google.com/safe-browsing/v4)<br>
+  3. [**urlscan.io**](https://urlscan.io/docs/api/) <br>
+
 
 ## Features:
   1. Automaticly checks the site Url, and sends it to the above APIs.<br>
@@ -12,11 +14,12 @@ A chrome etxtension that protects you from phishing and social engeneering attac
   4. API flooding control - doesn't automaticly checks the site if it has been checked recently.<br>
 
 ## Set Up API Keys:
-  Create a folder inside script called secret.json:.<br>
+  Create a folder inside script called secret.json:<br>
   ```json
   {
     "VIRUSTOTAL_APIKEY" : "****",
-    "GOOGLE_APIKEY" : "****"
+    "GOOGLE_APIKEY" : "****", 
+    "URLSCAN_APIKEY" : "****"
   }
   ```
-  Fill out your Google Safe Browsing and VIrustotal API keys.
+  Fill out your Google Safe Browsing, Virustotal and Urlscan API keys.
