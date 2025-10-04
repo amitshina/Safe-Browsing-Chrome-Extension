@@ -9,6 +9,9 @@ const checked_urls_max_length = 30;
 let known_unsafe_urls = []; 
 const known_unsafe_urls_max_length = 5;
 
+// What score does a site need to be considered unsafe? -- VirusTotal Score
+const unsafe_site_score = 2;
+
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 // Google Safe Browsing Lookup API:
@@ -100,7 +103,6 @@ let virustotal_api_key = "";
 const virustotal_api_url = "https://www.virustotal.com/api/v3/urls/"
 
 async function checkUrl_virustotal(url) {
-    // 1. VirusTotal uses a Base64-encoded, unpadded URL as the resource identifier (ID)
     const url_encoded = btoa(url).replace(/=/g, ''); 
     const full_url = virustotal_api_url+url_encoded;
 
@@ -108,21 +110,20 @@ async function checkUrl_virustotal(url) {
         const res = await fetch(full_url, {
             method: 'GET',
             headers: { 
-                // Authentication uses the x-apikey header
                 'x-apikey': virustotal_api_key,
                 'Accept': 'application/json' 
             }
         });
 
         if (res.status === 404) {
-            // URL not found in VT's database; treat as safe for this check.
-            return { safe: true, info: "Not scanned recently" };
+            // URL not found in database
+            return { safe: null, info: "Not in database" };
         }
 
         if (res.status === 429) {
-            // Rate limit exceeded (4 requests/minute for Public API)
+            // Rate limit exceeded (4 requests/minute)
             console.error("VirusTotal API Rate Limit Hit (429)");
-            return { safe: null, error: "Rate Limit" };
+            return { safe: null, error: "API Rate Limit" };
         }
 
         if (!res.ok) {
@@ -130,14 +131,13 @@ async function checkUrl_virustotal(url) {
         }
 
         const data = await res.json();
-        // Check 'last_analysis_stats' for malicious/suspicious detections
         const stats = data.data.attributes.last_analysis_stats;
 
         const detected_count = stats.malicious + stats.suspicious;
         const harmless_count = stats.harmless;
         const ratio_string = `${detected_count}/${harmless_count}`;
         
-        // A URL is considered unsafe if any scanner marked it as malicious
+        // A URL is considered unsafe if any scanner marked it as malicious or suspicious
         if (stats.malicious > 0 || stats.suspicious > 0) {
             return { safe: false, malicious: stats.malicious, suspicious: stats.suspicious, harmless:stats.harmless, score: ratio_string };
         } else {
@@ -260,8 +260,9 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             const google_res = await checkUrl_google(msg.url || "");
             const virustotal_res = await checkUrl_virustotal(msg.url || "");
 
-        if(virustotal_res.malicious+virustotal_res.suspicious>=1 || !google_res.safe){
-            // Sends a notification if the url is unsafe and it is not in the last 10 urls
+        // Sends a notifiaction to an unsafe site (unsafe_site_score - virustotal), or google flags it as unsafe 
+        if(virustotal_res.malicious+virustotal_res.suspicious>=unsafe_site_score || !google_res.safe){
+            // Checks if the site is not in the last 10 urls
             if (!known_unsafe_urls.includes(msg.url)){
                 createAlertNotification(msg.url, virustotal_res.score, google_res.safe);
                 known_unsafe_urls.push(msg.url);
