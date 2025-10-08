@@ -14,7 +14,7 @@ A chrome etxtension that protects you from phishing and social engeneering attac
   4. API flooding control - doesn't automaticly checks the site if it has been checked recently.<br>
 
 ## Set Up API Keys:
-  Create a folder inside script called secret.json:<br>
+  Create a file inside the Scripts folder called secret.json:<br>
   ```json
   {
     "VIRUSTOTAL_APIKEY" : "****",
