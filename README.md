@@ -22,4 +22,4 @@ A Chrome extension that protects you from phishing and social engineering attack
   }
   ```
   Fill out your Google Safe Browsing, Virustotal, and Urlscan API keys.
-  (UrlScan feature is still work in progresss).
+  (UrlScan feature is still a work in progress).
