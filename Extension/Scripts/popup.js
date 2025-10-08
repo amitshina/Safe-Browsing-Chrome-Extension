@@ -30,8 +30,8 @@ function displayResult(result) {
         <strong>Phish result:</strong><br>
         Google: ${google_safe}<br>
         VirusTotal score: ${result.virustotal}<br>
-        Error: ${result.error}
-    `;
+        Error: ${result.error} 
+    `; // The error field is for debugging
 
     document.getElementById("main_text_extension").innerHTML = text;
 }

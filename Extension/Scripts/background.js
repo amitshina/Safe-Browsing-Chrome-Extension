@@ -53,50 +53,6 @@ async function checkUrl_google(url) {
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-// PhishTank API: Not Working
-// TODO: Get an API key
-// const phishtank_api_url = `https://checkurl.phishtank.com/checkurl/index.php`;
-
-// async function checkUrl_phishtank(url) {    
-//     const params = new URLSearchParams();
-//     params.append('url', url);
-//     params.append('format', 'json');
-//     //params.append('app_key', PHISHTANK_API_KEY);
-
-//     try {
-//         const response = await fetch(phishtank_api_url, {
-//         method: 'POST',
-//         headers: {
-//             // 1. Set the recommended User-Agent string
-//             'User-Agent': `phishtank/firesodlier (Chrome Extension)`,
-            
-//             // 2. PhishTank API is a POST request that typically uses x-www-form-urlencoded
-//             'Content-Type': 'application/x-www-form-urlencoded', 
-//         },
-//         // Send the parameters in the request body
-//         body: params.toString() 
-//         });
-
-//         if (response.status === 403) {
-//             console.error("PhishTank API returned 403 Forbidden. Check your API key and User-Agent.");
-//             return {info: "403"};
-//         }
-
-//         if (!response.ok) {
-//             throw new Error(`HTTP error! status: ${response.status}`);
-//         }
-
-//         const data = await response.json();
-//         return {safe: data.result.safe};
-
-//     } catch (error) {
-//         console.error("Error calling PhishTank API:", error);
-//         return null;
-//     }
-// }
-
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-
 //Virus Total:
 let virustotal_api_key = "";
 const virustotal_api_url = "https://www.virustotal.com/api/v3/urls/"
@@ -156,68 +112,68 @@ let urlscan_api_key = "";
 const urlscan_submit_url = "https://urlscan.io/api/v1/scan/"; 
 const urlscan_result_base_url = "https://urlscan.io/api/v1/result/";
 
-async function checkUrl_urlscan(url) {
-    const submitBody = {
-        url: url,
-        public: "off" 
-    };
+// async function checkUrl_urlscan(url) {
+//     const submitBody = {
+//         url: url,
+//         public: "off" 
+//     };
 
-    try {
-        // Submit the URL for a new scan:
-        let res = await fetch(urlscan_submit_url, {
-            method: "POST",
-            headers: { 
-                "Content-Type": "application/json",
-                "API-Key": urlscan_api_key 
-            },
-            body: JSON.stringify(submitBody)
-        });
+//     try {
+//         // Submit the URL for a new scan:
+//         let res = await fetch(urlscan_submit_url, {
+//             method: "POST",
+//             headers: { 
+//                 "Content-Type": "application/json",
+//                 "API-Key": urlscan_api_key 
+//             },
+//             body: JSON.stringify(submitBody)
+//         });
 
-        if (res.status === 429) {
-            console.error("urlscan.io Rate Limit Hit (429)");
-            return { score: null, error: "Rate Limit" }; 
-        }
+//         if (res.status === 429) {
+//             console.error("urlscan.io Rate Limit Hit (429)");
+//             return { score: null, error: "Rate Limit" }; 
+//         }
         
-        if (!res.ok) {
-            throw new Error(`Submission failed with status: ${res.status}`);
-        }
+//         if (!res.ok) {
+//             throw new Error(`Submission failed with status: ${res.status}`);
+//         }
 
-        const data = await res.json();
-        const uuid = data.uuid;
+//         const data = await res.json();
+//         const uuid = data.uuid;
 
-        // Poll for the scan results:
-        let resultData = null;
-        for (let index = 0; index < 6 || res.status === 200; index++) {
-            res = await fetch(`${urlscan_result_base_url}${uuid}/`, {
-                headers: { "API-Key": urlscan_api_key }
-            });
-            await sleep(3000); // Wait 3 seconds 
-        }
+//         // Poll for the scan results:
+//         let resultData = null;
+//         for (let index = 0; index < 6 || res.status === 200; index++) {
+//             res = await fetch(`${urlscan_result_base_url}${uuid}/`, {
+//                 headers: { "API-Key": urlscan_api_key }
+//             });
+//             await sleep(3000); // Wait 3 seconds 
+//         }
 
-        if (res.status === 200) {
-            resultData = await res.json();
-        }
-        else {
-            throw new Error(`Result retrieval failed with status: ${res.status}`);
-        }
+//         if (res.status === 200) {
+//             resultData = await res.json();
+//         }
+//         else {
+//             throw new Error(`Result retrieval failed with status: ${res.status}`);
+//         }
 
-        if (!resultData) {
-            // Timeout after polling
-            return { score: null, error: "Timeout" }; 
-        }
+//         if (!resultData) {
+//             // Timeout after polling
+//             return { score: null, error: "Timeout" }; 
+//         }
 
-        // Score is an integer from -100 (safe) to 100 (malicious)
-        const urlscan_score = resultData.verdicts.urlscan.score;
+//         // Score is an integer from -100 (safe) to 100 (malicious)
+//         const urlscan_score = resultData.verdicts.urlscan.score;
         
-        return { 
-            score: urlscan_score 
-        };
+//         return { 
+//             score: urlscan_score 
+//         };
 
-    } catch (err) {
-        console.error("urlscan.io API Error:", err);
-        return { score: null, error: "API request failed" }; 
-    }
-}
+//     } catch (err) {
+//         console.error("urlscan.io API Error:", err);
+//         return { score: null, error: "API request failed" }; 
+//     }
+// }
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 let result = "";
@@ -231,7 +187,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         .then((secrets) => {
             virustotal_api_key = secrets.VIRUSTOTAL_APIKEY;
             google_api_key = secrets.GOOGLE_APIKEY;
-            urlscan_api_key = secrets.URLSCAN_APIKEY;
+            // urlscan_api_key = secrets.URLSCAN_APIKEY;
         })
         .catch((err) => {
             console.error('Failed to load secret.json:', err);
