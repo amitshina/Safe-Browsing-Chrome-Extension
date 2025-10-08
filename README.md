@@ -1,5 +1,5 @@
 # Safe Browsing Chrome Extension
-A chrome etxtension that protects you from phishing and social engeneering attacks.
+A Chrome extension that protects you from phishing and social engineering attacks.
 
 ## Databases & API's:
   1. [**VirusTotal**](https://docs.virustotal.com/) (URL / domain reports & scans)<br>
@@ -8,10 +8,10 @@ A chrome etxtension that protects you from phishing and social engeneering attac
 
 
 ## Features:
-  1. Automaticly checks the site Url, and sends it to the above APIs.<br>
-  2. Displayes the result in the extension.<br>
-  3. If a site is found unsafe, a messege is sent to the user.<br>
-  4. API flooding control - doesn't automaticly checks the site if it has been checked recently.<br>
+  1. Automatically checks the site URL and sends it to the above APIs.<br>
+  2. Displays the result in the extension.<br>
+  3. If a site is found unsafe, a message is sent to the user.<br>
+  4. Checks the site to see if it has been checked recently. If it has, it doesn't check it again.<br>
 
 ## Set Up API Keys:
   Create a file inside the Scripts folder called secret.json:<br>
@@ -22,4 +22,4 @@ A chrome etxtension that protects you from phishing and social engeneering attac
     "URLSCAN_APIKEY" : "****"
   }
   ```
-  Fill out your Google Safe Browsing, Virustotal and Urlscan API keys.
+  Fill out your Google Safe Browsing, Virustotal, and Urlscan API keys.
