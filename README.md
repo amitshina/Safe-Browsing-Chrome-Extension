@@ -4,7 +4,6 @@ A Chrome extension that protects you from phishing and social engineering attack
 ## Databases & API's:
   1. [**VirusTotal**](https://docs.virustotal.com/) (URL / domain reports & scans)<br>
   2. [**Google Lookup API** v4](https://developers.google.com/safe-browsing/v4)<br>
-  3. [**urlscan.io**](https://urlscan.io/docs/api/) <br>
 
 
 ## Features:
@@ -23,3 +22,4 @@ A Chrome extension that protects you from phishing and social engineering attack
   }
   ```
   Fill out your Google Safe Browsing, Virustotal, and Urlscan API keys.
+  (UrlScan feature is still work in progresss).
