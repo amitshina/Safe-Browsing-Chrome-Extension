@@ -22,7 +22,7 @@ async function checkUrl_google(url) {
     const google_full_url = google_api_url+google_api_key;
     const body = {
         client: {
-        clientId: "safebrowsingextensionnala",
+        clientId: "safebrowsingextensionn",
         clientVersion: "1.0"
         },
         threatInfo: {
@@ -234,8 +234,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 // setBadgeText may fail in some contexts; ignore
                 console.warn("Badge set failed:", e);
             }
-        } else {
-            chrome.action.setBadgeText({ text: "" });
+        } else { // The site is safe, setting the badge to a green V
+            try {
+                chrome.action.setBadgeText({ text: "√" });
+                chrome.action.setBadgeBackgroundColor({ color: "#00FF00" });
+            } catch (e) {
+                console.warn("Badge set failed:", e);
+            }
         }
 
         result = {
