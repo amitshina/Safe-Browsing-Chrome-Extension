@@ -286,7 +286,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
             // Set a badge on the extension icon
             try {
                 chrome.action.setBadgeText({ text: "!" });
-                chrome.action.setBadgeBackgroundColor({ color: "#FF7F00" });
+                chrome.action.setBadgeBackgroundColor({ color: "#FFA000" });
             } catch (e) {
                 // setBadgeText may fail in some contexts; ignore
                 console.warn("Badge set failed:", e);
