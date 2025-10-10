@@ -1,5 +1,5 @@
 // Define the Sleep Function:
-const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+// const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
 // List of the last checked urls, so the api rate would'nt exceed:
 let checked_urls = [];
@@ -9,8 +9,9 @@ const checked_urls_max_length = 30;
 let known_unsafe_urls = []; 
 const known_unsafe_urls_max_length = 5;
 
-// What score does a site need to be considered unsafe? -- VirusTotal Score
-const unsafe_site_score = 2;
+// What score does a site need to be considered unsafe? or suspicious? -- VirusTotal Score
+const suspicious_site_score = 2;
+const unsafe_site_score = 10;
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -181,6 +182,7 @@ let result = "";
 // Calling the Functions:
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     if(msg.action==="updateApiKeys"){
+        console.log("Updated API Keys")
         // Load secrets in background script
         fetch(chrome.runtime.getURL('Scripts/secret.json'))
         .then((response) => response.json())
@@ -195,7 +197,39 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     }
     if (msg.action === "isCheckedUrl" && msg.url){
-        sendResponse(is_checked(msg.url))
+        const res = is_checked(msg.url);
+        if (res){
+            const item = checked_urls.find(item => item.url === msg.url);
+            if(item.level===2){
+                if (!known_unsafe_urls.includes(msg.url)){
+                    createAlertNotification(msg.url, virustotal_res.score, google_res.safe, 2);
+                    known_unsafe_urls.push(msg.url);
+                    while(known_unsafe_urls.length>known_unsafe_urls_max_length){
+                        known_unsafe_urls.shift();
+                    }
+                }
+                
+                chrome.action.setBadgeText({ text: "!" });
+                chrome.action.setBadgeBackgroundColor({ color: "#ff0000ff" });
+            }
+            else if (item.level===1){
+                if (!known_unsafe_urls.includes(msg.url)){
+                    createAlertNotification(msg.url, virustotal_res.score, google_res.safe, 1);
+                    known_unsafe_urls.push(msg.url);
+                    while(known_unsafe_urls.length>known_unsafe_urls_max_length){
+                        known_unsafe_urls.shift();
+                    }
+                }
+                
+                chrome.action.setBadgeText({ text: "!" });
+                chrome.action.setBadgeBackgroundColor({ color: "#FFA000" });
+            }
+            else if(item.level===0){
+                chrome.action.setBadgeText({ text: "√" });
+                chrome.action.setBadgeBackgroundColor({ color: "#00FF00" });
+            }
+        }
+        sendResponse(res);
     }
 
     if (msg.action === "getResult" && msg.url) {
@@ -208,25 +242,27 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
     if (msg.action === "checkPhish" && msg.url) {
         (async () => {
-            checked_urls.push(msg.url);
-            while (checked_urls.length>checked_urls_max_length){
-                checked_urls.shift();
-            }
             const google_res = await checkUrl_google(msg.url);
             const virustotal_res = await checkUrl_virustotal(msg.url);
             // const urlscan_res = await checkUrl_urlscan(msg.url);
 
+            const virustotal_score = virustotal_res.malicious+virustotal_res.suspicious;
+
         // Sends a notifiaction to an unsafe site (unsafe_site_score - virustotal), or google flags it as unsafe 
-        if(virustotal_res.malicious+virustotal_res.suspicious>=unsafe_site_score || !google_res.safe){
-            // Checks if the site is not in the last 10 urls
-            if (!known_unsafe_urls.includes(msg.url)){
-                createAlertNotification(msg.url, virustotal_res.score, google_res.safe);
-                known_unsafe_urls.push(msg.url);
-                while(known_unsafe_urls.length>known_unsafe_urls_max_length){
-                    known_unsafe_urls.shift();
-                }
+        if(virustotal_score>=unsafe_site_score || !google_res.safe){
+            // Add to the list with a level of 2
+            checked_urls.push({"url" : msg.url, "level": 2});
+            while (checked_urls.length>checked_urls_max_length){
+                checked_urls.shift();
             }
-            // Optional: set a badge on the extension icon
+            
+            createAlertNotification(msg.url, virustotal_res.score, google_res.safe, 2);
+            known_unsafe_urls.push(msg.url);
+            while(known_unsafe_urls.length>known_unsafe_urls_max_length){
+                known_unsafe_urls.shift();
+            }
+
+            // Set a badge on the extension icon
             try {
                 chrome.action.setBadgeText({ text: "!" });
                 chrome.action.setBadgeBackgroundColor({ color: "#FF0000" });
@@ -234,8 +270,35 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                 // setBadgeText may fail in some contexts; ignore
                 console.warn("Badge set failed:", e);
             }
+        } else if(virustotal_score>=suspicious_site_score){ // The site is just suspicious
+            // Add to the list with a level of 1
+            checked_urls.push({"url" : msg.url, "level": 1});
+            while (checked_urls.length>checked_urls_max_length){
+                checked_urls.shift();
+            }
+
+            createAlertNotification(msg.url, virustotal_res.score, google_res.safe, 1);
+            known_unsafe_urls.push(msg.url);
+            while(known_unsafe_urls.length>known_unsafe_urls_max_length){
+                known_unsafe_urls.shift();
+            }
+            
+            // Set a badge on the extension icon
+            try {
+                chrome.action.setBadgeText({ text: "!" });
+                chrome.action.setBadgeBackgroundColor({ color: "#FF7F00" });
+            } catch (e) {
+                // setBadgeText may fail in some contexts; ignore
+                console.warn("Badge set failed:", e);
+            }
         } else { // The site is safe, setting the badge to a green V
             try {
+            // Add to the list with a level of 0
+            checked_urls.push({"url" : msg.url, "level": 0});
+            while (checked_urls.length>checked_urls_max_length){
+                checked_urls.shift();
+            }
+
                 chrome.action.setBadgeText({ text: "√" });
                 chrome.action.setBadgeBackgroundColor({ color: "#00FF00" });
             } catch (e) {
@@ -258,13 +321,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
 
 // Checks if a url has been checked recently:
 function is_checked(url){
-    return checked_urls.includes(url);
+    return checked_urls.some(item => item.url === url);
 }
 
 // Sends a notification that the site is unsafe
-function createAlertNotification(url, score, googleStatus) {
-    const title = "The Website You Just Entered is Potentially Unsafe";
-    const message = `URL: ${url}\nVirusTotal score: ${score}\nGoogle: ${googleStatus}`;
+function createAlertNotification(url, score, googleStatus, risk_level) {
+    const title = (risk_level==1) ? "The Site You Just Entered is Suspicious" : "The Site You Just Entered is Unsafe";
+    const google_safe = googleStatus ? "Safe" : "Not Safe";
+    const message = `URL: ${url}\nVirusTotal score: ${score}\nGoogle: ${google_safe}`;
 
     chrome.notifications.create(
         undefined,
