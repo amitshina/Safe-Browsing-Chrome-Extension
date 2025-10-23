@@ -1,0 +1,37 @@
+.button {
+    border: none;
+    color: white;
+    padding: 15px 20px;
+    text-align: center;
+    display: inline-block;
+    font-weight: bolder;
+    font-size: 16px;
+    margin: 4px 2px;
+    font-size: x-large;
+    cursor: pointer;
+    white-space: nowrap;
+    background-color: #008CBA;
+}
+
+.button span {
+    display: inline-block;
+    position: relative;
+    transition: 0.5s;
+}
+
+.button span:after {
+    content: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" fill="white" width="28" height="28" viewBox="0 0 24 24"><path d="M5 18h14v-2H5v2zm7-14l6.67 7h-3.67v4h-6v-4H5.33L12 4z"/></svg>');
+    position: absolute;
+    opacity: 0;
+    right: -20px;
+    transition: 0.5s;
+}
+
+.button:hover span {
+    padding-right: 35px;
+}
+
+.button:hover span:after {
+    opacity: 1;
+    right: 0;
+}
