@@ -1,10 +1,40 @@
-<html>
-    <head>
-        <link rel="stylesheet" href="style.css">
-    </head>
-    <body>
-        <h1 id="main_text_extension">Loading...</h1>
-        <script src="popup.js"></script>
-        <button class = "button" type="button"><span>Click File</span></button>
-    </body>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Phishing Check</title>
+    <link rel="stylesheet" href="popup.css" />
+</head>
+
+<body>
+    <div class="card">
+        <div class="header">
+            <img src="..\Images\Logo1.png" alt="Extension Logo" class="logo" />
+            <h1>Site Safety Check</h1>
+        </div>
+
+        <div class="section">
+            <label for="url">Website URL</label>
+            <div class="url-box">
+                <hi id="url-text">Loading...</hi>
+            </div>
+        </div>
+
+        <div class="section score-section">
+            <span class="score-title">Safety Score</span>
+            <div class="score-circle safe" id="score-circle">
+                <span class="score-value" id="score-text">92</span>
+                <span class="score-label" id="score-label">Safe</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span class="status safe-text" id="status-text">No phishing detected</span>
+        </div>
+    </div>
+
+    <script src="popup.js"></script>
+</body>
+
 </html>
