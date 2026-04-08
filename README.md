@@ -17,9 +17,8 @@ A Chrome extension that protects you from phishing and social engineering attack
   ```json
   {
     "VIRUSTOTAL_APIKEY" : "****",
-    "GOOGLE_APIKEY" : "****", 
-    "URLSCAN_APIKEY" : "****"
+    "GOOGLE_APIKEY" : "****"
   }
   ```
-  Fill out your Google Safe Browsing, Virustotal, and Urlscan API keys.
+  Fill out your Google Safe Browsing and Virustotal API keys.
   (UrlScan feature is still a work in progress).
