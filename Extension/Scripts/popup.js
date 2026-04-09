@@ -28,7 +28,7 @@ function shortenUrl(url, maxLength = 80) {
         : url;
 }
 
-// Updates the circle color
+// Updates the circle color:
 function setScoreState(state) {
     const scoreCircle = document.getElementById("score-circle");
     scoreCircle.classList.remove("safe", "warning", "unsafe");
@@ -57,8 +57,8 @@ function displayResult(result) {
     document.getElementById("url-text").innerHTML = shortenUrl(result.url);;
 
     // Update the Url Score text and label with the scores
-    if(result.google==false && result.virustotal_num_score<result.unsafe_site_score){ // google flags us unsafe while virustotal doesn't
-        document.getElementById("score-text").innerHTML = google_safe;
+    if(result.google==false && result.virustotal_num_score<result.unsafe_site_score){ // google flags as unsafe while virustotal doesn't
+        document.getElementById("score-text").innerHTML = google_safe; 
         document.getElementById("score-label").innerHTML = "Google API";
     }
     else if(result.virustotal==null || result.virustotal==undefined){
