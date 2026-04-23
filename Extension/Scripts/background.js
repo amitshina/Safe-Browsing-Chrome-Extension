@@ -1,13 +1,10 @@
-// Define the Sleep Function:
-// const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
 // List of the last checked urls, so the api rate would'nt exceed:
 let checked_urls = [];
-const checked_urls_max_length = 30;
+const checked_urls_max_length = 100;
 
 // List of the last unsafe websites, so it would'nt send the notification twice:
 let known_unsafe_urls = [];
-const known_unsafe_urls_max_length = 5;
+const known_unsafe_urls_max_length = 10;
 
 // What score does a site need to be considered unsafe? or suspicious? -- VirusTotal Score
 const suspicious_site_score = 2;
@@ -114,13 +111,11 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     // Update the Api keys
     if (msg.action === "updateApiKeys") {
         console.log("Updated API Keys")
-        // Load secrets in background script
         fetch(chrome.runtime.getURL('Scripts/secret.json'))
             .then((response) => response.json())
             .then((secrets) => {
                 virustotal_api_key = secrets.VIRUSTOTAL_APIKEY;
                 google_api_key = secrets.GOOGLE_APIKEY;
-                // urlscan_api_key = secrets.URLSCAN_APIKEY;
             })
             .catch((err) => {
                 console.error('Failed to load secret.json:', err);
@@ -179,7 +174,6 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         (async () => {
             const google_res = await checkUrl_google(msg.url);
             const virustotal_res = await checkUrl_virustotal(msg.url);
-            // const urlscan_res = await checkUrl_urlscan(msg.url);
 
             const virustotal_score = virustotal_res.malicious + virustotal_res.suspicious;
             let risk_score = 0;
@@ -230,6 +224,7 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
                     // setBadgeText may fail in some contexts - ignore
                     console.warn("Badge set failed:", e);
                 }
+
             } else { // The site is safe, setting the badge to a green V
                 risk_score = 0;
                 try {

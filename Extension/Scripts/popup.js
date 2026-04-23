@@ -57,11 +57,11 @@ function displayResult(result) {
     document.getElementById("url-text").innerHTML = shortenUrl(result.url);;
 
     // Update the Url Score text and label with the scores
-    if(result.google==false && result.virustotal_num_score<result.unsafe_site_score){ // google flags as unsafe while virustotal doesn't
+    if(result.google==false && result.virustotal_num_score<result.unsafe_site_score){ // google flags as unsafe while virustotal doesn't - use Google's results
         document.getElementById("score-text").innerHTML = google_safe; 
         document.getElementById("score-label").innerHTML = "Google API";
     }
-    else if(result.virustotal==null || result.virustotal==undefined){
+    else if(result.virustotal==null || result.virustotal==undefined){ //virustotal is undefined
         //use google score if is defined:
         if(result.google==undefined || result.google==null){
             //no results
